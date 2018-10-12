@@ -14,7 +14,7 @@ export abstract class BaseLoginProvider implements LoginProvider {
     signInJS.async = true;
     signInJS.src = obj.url;
     signInJS.onload = onload;
-    if (obj.name === 'LINKEDIN') {
+    if (obj.name === 'linkedin') {
       signInJS.async = false;
       signInJS.text = ('api_key: ' + obj.id).replace('\'', '');
     }
