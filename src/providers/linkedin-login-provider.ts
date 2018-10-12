@@ -1,5 +1,6 @@
 import { BaseLoginProvider } from '../entities/base-login-provider';
-import { SocialUser, LoginProviderClass, LinkedInResponse } from '../entities/user';
+import { LinkedInUser, LoginProviderClass, LinkedInResponse } from '../entities/user';
+import { Observable } from 'rxjs';
 
 declare let IN: any;
 
@@ -15,8 +16,8 @@ export class LinkedinLoginProvider extends BaseLoginProvider {
     this.loginProviderObj.url = 'https://platform.linkedin.com/in.js';
   }
 
-  initialize(): Promise<SocialUser> {
-    return new Promise((resolve, reject) => {
+  initialize(): Observable<LinkedInUser> {
+    return new Observable.create((observer) => {
       this.loadScript(this.loginProviderObj, () => {
           IN.init({
             api_key: this.clientId,
@@ -29,7 +30,7 @@ export class LinkedinLoginProvider extends BaseLoginProvider {
               IN.API.Raw(
                 '/people/~:(id,first-name,last-name,email-address,picture-url)'
               ).result( (res: LinkedInResponse) => {
-                resolve(this.drawUser(res));
+                observer.next(this.drawUser(res));
               });
             }
           });
@@ -44,32 +45,34 @@ export class LinkedinLoginProvider extends BaseLoginProvider {
     });
   }
 
-  drawUser(response: LinkedInResponse): SocialUser {
-    let user: SocialUser = new SocialUser();
+  drawUser(response: LinkedInResponse): LinkedInUser {
+    let user: LinkedInUser = new LinkedInUser();
     user.id = response.emailAddress;
     user.name = response.firstName + ' ' + response.lastName;
+    user.firstName = response.firstName;
+    user.lastName = response.lastName;
     user.email = response.emailAddress;
     user.image = response.pictureUrl;
     user.token = IN.ENV.auth.oauth_token;
     return user;
   }
 
-  signIn(): Promise<SocialUser> {
-    return new Promise((resolve, reject) => {
+  signIn(): Observable<LinkedInUser> {
+    return new Observable.create((observer) => {
       IN.User.authorize( () => {
         IN.API.Raw('/people/~:(id,first-name,last-name,email-address,picture-url)').result( (res: LinkedInResponse) => {
-          resolve(this.drawUser(res));
+          observer.next(this.drawUser(res));
         });
       });
     });
   }
 
-  signOut(): Promise<any> {
-    return new Promise((resolve, reject) => {
+  signOut(): Observable<any> {
+    return new Observable.create((observer) => {
       IN.User.logout((response: any) => {
-        resolve();
+        observer.next(response);
       }, (err: any) => {
-        reject(err);
+        observer.error(err);
       });
     });
   }

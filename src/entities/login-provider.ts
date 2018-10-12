@@ -1,8 +1,9 @@
 import { SocialUser } from './user';
+import { Observable } from 'rxjs';
 
 export interface LoginProvider {
-  initialize(): Promise<SocialUser>;
-  signIn(): Promise<SocialUser>;
-  signOut(): Promise<any>;
+  initialize(): Observable<SocialUser>;
+  signIn(): Observable<SocialUser>;
+  signOut(): Observable<any>;
 }
 

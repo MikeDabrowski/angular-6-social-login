@@ -1,5 +1,6 @@
 import { BaseLoginProvider } from '../entities/base-login-provider';
-import { SocialUser, LoginProviderClass } from '../entities/user';
+import { GoogleUser, LoginProviderClass } from '../entities/user';
+import { Observable } from 'rxjs';
 
 declare let gapi: any;
 
@@ -16,8 +17,8 @@ export class GoogleLoginProvider extends BaseLoginProvider {
     this.loginProviderObj.url = 'https://apis.google.com/js/platform.js';
   }
 
-  initialize(): Promise<SocialUser> {
-    return new Promise((resolve, reject) => {
+  initialize(): Observable<GoogleUser> {
+    return new Observable.create((observer) => {
       this.loadScript(this.loginProviderObj, () => {
           gapi.load('auth2', () => {
             this.auth2 = gapi.auth2.init({
@@ -27,7 +28,7 @@ export class GoogleLoginProvider extends BaseLoginProvider {
 
             this.auth2.then(() => {
               if (this.auth2.isSignedIn.get()) {
-                resolve(this.drawUser());
+                observer.next(this.drawUser());
               }
             });
           });
@@ -35,35 +36,36 @@ export class GoogleLoginProvider extends BaseLoginProvider {
     });
   }
 
-  drawUser(): SocialUser {
-    let user: SocialUser = new SocialUser();
+  drawUser(): GoogleUser {
+    let user: GoogleUser = new GoogleUser();
     let profile = this.auth2.currentUser.get().getBasicProfile();
     let authResponseObj = this.auth2.currentUser.get().getAuthResponse(true);
     user.id = profile.getId();
     user.name = profile.getName();
     user.email = profile.getEmail();
     user.image = profile.getImageUrl();
+    user.firstName = profile.getGivenName();
+    user.lastName = profile.getFamilyName();
     user.token = authResponseObj.access_token;
     user.idToken = authResponseObj.id_token;
     return user;
   }
 
-  signIn(): Promise<SocialUser> {
-    return new Promise((resolve, reject) => {
-      let promise = this.auth2.signIn();
-      promise.then(() => {
-        resolve(this.drawUser());
+  signIn(): Observable<GoogleUser> {
+    return new Observable.create((observer) => {
+      this.auth2.signIn().then(() => {
+        observer.mext(this.drawUser());
       });
     });
   }
 
-  signOut(): Promise<any> {
-    return new Promise((resolve, reject) => {
+  signOut(): Observable<any> {
+    return new Observable.create((observer) => {
       this.auth2.signOut().then((err: any) => {
         if (err) {
-          reject(err);
+          observer.error(err);
         } else {
-          resolve();
+          observer.next();
         }
       });
     });

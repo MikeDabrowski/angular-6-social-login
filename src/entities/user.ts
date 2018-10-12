@@ -3,6 +3,8 @@ export class SocialUser {
   id: string;
   email: string;
   name: string;
+  firstName?: string;
+  lastName?: string;
   image: string;
   token?: string;
   idToken?: string
@@ -20,4 +22,13 @@ export class LinkedInResponse {
   id: string;
   lastName: string;
   pictureUrl: string;
+}
+
+export class FbUser extends SocialUser {
+}
+
+export class GoogleUser extends SocialUser {
+}
+
+export class LinkedInUser extends SocialUser {
 }

@@ -1,5 +1,6 @@
 import { BaseLoginProvider } from '../entities/base-login-provider';
-import { SocialUser, LoginProviderClass } from '../entities/user';
+import { FbUser, LoginProviderClass } from '../entities/user';
+import { Observable } from 'rxjs';
 
 declare let FB: any;
 
@@ -15,8 +16,8 @@ export class FacebookLoginProvider extends BaseLoginProvider {
     this.loginProviderObj.url = 'https://connect.facebook.net/en_US/sdk.js';
   }
 
-  initialize(): Promise<SocialUser> {
-    return new Promise((resolve, reject) => {
+  initialize(): Observable<FbUser> {
+    return new Observable.create((observer) => {
       this.loadScript(this.loginProviderObj, () => {
           FB.init({
             appId: this.clientId,
@@ -30,8 +31,8 @@ export class FacebookLoginProvider extends BaseLoginProvider {
           FB.getLoginStatus(function (response: any) {
             if (response.status === 'connected') {
               const accessToken = FB.getAuthResponse()['accessToken'];
-              FB.api('/me?fields=name,email,picture', (res: any) => {
-                resolve(FacebookLoginProvider.drawUser(Object.assign({}, {token: accessToken}, res)));
+              FB.api('/me?fields=name,email,picture,first_name,last_name', (res: any) => {
+                observer.next(FacebookLoginProvider.drawUser(Object.assign({}, {token: accessToken}, res)));
               });
             }
           });
@@ -39,33 +40,35 @@ export class FacebookLoginProvider extends BaseLoginProvider {
     });
   }
 
-  static drawUser(response: any): SocialUser {
-    let user: SocialUser = new SocialUser();
+  static drawUser(response: any): FbUser {
+    let user: FbUser = new FbUser();
     user.id = response.id;
     user.name = response.name;
     user.email = response.email;
     user.token = response.token;
+    user.firstName = response.firstName;
+    user.lastName = response.lastName;
     user.image = 'https://graph.facebook.com/' + response.id + '/picture?type=normal';
     return user;
   }
 
-  signIn(): Promise<SocialUser> {
-    return new Promise((resolve, reject) => {
+  signIn(): Observable<FbUser> {
+    return new Observable.create((observer) => {
       FB.login((response: any) => {
         if (response.authResponse) {
           const accessToken = FB.getAuthResponse()['accessToken'];
-          FB.api('/me?fields=name,email,picture', (res: any) => {
-            resolve(FacebookLoginProvider.drawUser(Object.assign({}, {token: accessToken}, res)));
+          FB.api('/me?fields=name,email,picture,first_name,last_name', (res: any) => {
+            observer.next(FacebookLoginProvider.drawUser(Object.assign({}, {token: accessToken}, res)));
           });
         }
       }, { scope: 'email,public_profile' });
     });
   }
 
-  signOut(): Promise<any> {
-    return new Promise((resolve, reject) => {
+  signOut(): Observable<any> {
+    return new Observable.create((observer) => {
       FB.logout((response: any) => {
-        resolve();
+        observer.next(response)
       });
     });
   }
