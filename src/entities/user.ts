@@ -1,10 +1,10 @@
+import { LoginProviderOptions } from './login-provider';
+
 export class SocialUser {
   provider: string;
   id: string;
   email: string;
   name: string;
-  firstName?: string;
-  lastName?: string;
   image: string;
   token?: string;
   idToken?: string
@@ -14,6 +14,7 @@ export class LoginProviderClass {
   name: string;
   id: string;
   url: string;
+  options: LoginProviderOptions;
 }
 
 export class LinkedInResponse {
@@ -25,6 +26,7 @@ export class LinkedInResponse {
 }
 
 export class FbUser extends SocialUser {
+  [key: string]: any;
 }
 
 export class GoogleUser extends SocialUser {

@@ -1,4 +1,5 @@
 import { BaseLoginProvider } from '../entities/base-login-provider';
+import { LoginProviderOptions } from '../entities/login-provider';
 import { LinkedInUser, LoginProviderClass, LinkedInResponse } from '../entities/user';
 import { Observable } from 'rxjs';
 
@@ -9,15 +10,16 @@ export class LinkedinLoginProvider extends BaseLoginProvider {
   public static readonly PROVIDER_ID = 'linkedin';
   public loginProviderObj: LoginProviderClass = new LoginProviderClass();
 
-  constructor(private clientId: string) {
+  constructor(private clientId: string, public options: LoginProviderOptions = {}) {
     super();
     this.loginProviderObj.id = clientId;
     this.loginProviderObj.name = 'linkedin';
     this.loginProviderObj.url = 'https://platform.linkedin.com/in.js';
+    this.loginProviderObj.options = options;
   }
 
   initialize(): Observable<LinkedInUser> {
-    return new Observable.create((observer) => {
+    return Observable.create((observer) => {
       this.loadScript(this.loginProviderObj, () => {
           IN.init({
             api_key: this.clientId,
@@ -46,11 +48,9 @@ export class LinkedinLoginProvider extends BaseLoginProvider {
   }
 
   drawUser(response: LinkedInResponse): LinkedInUser {
-    let user: LinkedInUser = new LinkedInUser();
+    const user: LinkedInUser = new LinkedInUser();
     user.id = response.emailAddress;
     user.name = response.firstName + ' ' + response.lastName;
-    user.firstName = response.firstName;
-    user.lastName = response.lastName;
     user.email = response.emailAddress;
     user.image = response.pictureUrl;
     user.token = IN.ENV.auth.oauth_token;
@@ -58,7 +58,7 @@ export class LinkedinLoginProvider extends BaseLoginProvider {
   }
 
   signIn(): Observable<LinkedInUser> {
-    return new Observable.create((observer) => {
+    return Observable.create((observer) => {
       IN.User.authorize( () => {
         IN.API.Raw('/people/~:(id,first-name,last-name,email-address,picture-url)').result( (res: LinkedInResponse) => {
           observer.next(this.drawUser(res));
@@ -68,7 +68,7 @@ export class LinkedinLoginProvider extends BaseLoginProvider {
   }
 
   signOut(): Observable<any> {
-    return new Observable.create((observer) => {
+    return Observable.create((observer) => {
       IN.User.logout((response: any) => {
         observer.next(response);
       }, (err: any) => {

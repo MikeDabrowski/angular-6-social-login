@@ -1,9 +1,6 @@
 import { Injectable } from '@angular/core';
-
-import { Observable, BehaviorSubject } from 'rxjs';
-
-import { LoginProvider } from './entities/login-provider';
-import { SocialUser } from './entities/user';
+import { BehaviorSubject, Observable } from 'rxjs';
+import { LoginProvider, SocialUser } from './entities';
 
 export interface AuthServiceConfigItem {
   id: string;
@@ -15,7 +12,7 @@ export class AuthServiceConfig {
 
   constructor(providers: AuthServiceConfigItem[]) {
     for (let i = 0; i < providers.length; i++) {
-      let element = providers[i];
+      const element = providers[i];
       this.providers.set(element.id, element.provider);
     }
   }
@@ -38,46 +35,53 @@ export class AuthService {
   constructor(config: AuthServiceConfig) {
     this.providers = config.providers;
     this.providers.forEach((provider: LoginProvider, key: string) => {
-      provider.initialize().then((user: SocialUser) => {
-        user.provider = key;
-        this._user = user;
-        this._authState.next(user);
-      }).catch((err) => {
-        // this._authState.next(null);
-      });
+      provider.initialize()
+          .subscribe(
+              (user: SocialUser) => {
+                user.provider = key;
+                this._user = user;
+                this._authState.next(user);
+              },
+              (err) => {
+                // this._authState.next(null);
+              });
     });
   }
 
-  signIn(providerId: string): Promise<SocialUser> {
-    return new Promise((resolve, reject) => {
-      let providerObject = this.providers.get(providerId);
+  signIn(providerId: string): Observable<SocialUser> {
+    return Observable.create((observer) => {
+      const providerObject = this.providers.get(providerId);
       if (providerObject) {
-        providerObject.signIn().then((user: SocialUser) => {
-          user.provider = providerId;
-          resolve(user);
-          this._user = user;
-          this._authState.next(user);
-        });
+        providerObject.signIn().subscribe(
+            (user: SocialUser) => {
+              user.provider = providerId;
+              observer.next(user);
+              this._user = user;
+              this._authState.next(user);
+            });
       } else {
-        reject(AuthService.LOGIN_PROVIDER_NOT_FOUND);
+        observer.error(AuthService.LOGIN_PROVIDER_NOT_FOUND);
       }
     });
   }
 
   signOut(): Promise<any> {
-    return new Promise((resolve, reject) => {
+    return Observable.create((observer) => {
       if (this._user && this._user.provider) {
-        let providerId = this._user.provider;
-        let providerObject = this.providers.get(providerId);
-        providerObject.signOut().then(() => {
-          this._user = null;
-          this._authState.next(null);
-          resolve();
-        }).catch((err) => {
-          this._authState.next(null);
-        });
+        const providerId = this._user.provider;
+        const providerObject = this.providers.get(providerId);
+        providerObject.signOut().subscribe(
+            () => {
+              this._user = null;
+              this._authState.next(null);
+              observer.next();
+            },
+            (err) => {
+              this._authState.next(null);
+              observer.error(err);
+            });
       } else {
-        reject(AuthService.LOGIN_PROVIDER_NOT_FOUND);
+        observer.error(AuthService.LOGIN_PROVIDER_NOT_FOUND);
       }
     });
   }
