@@ -1,14 +1,14 @@
 {
-  "name": "angular-6-social-login",
-  "version": "1.1.0",
-  "description": "Agular 6 : Social Login (Facebook and Google)",
+  "name": "angular-6-social-login-rxjs",
+  "version": "2.0.0",
+  "description": "Agular 6+RxJS: Social Login (Facebook, Google, LinkedIn)",
   "repository": {
     "type": "git",
-    "url": "https://github.com/high54/angular-6-social-login"
+    "url": "https://github.com/MikeDabrowski/angular-6-social-login"
   },
   "author": {
-    "name": "Julien Bertacco",
-    "email": "julien.bertacco@gmail.com"
+    "name": "Mike Dabrowski",
+    "email": "mike2060@gmail.com"
   },
   "keywords": [
     "angular",
@@ -30,7 +30,8 @@
     "angular-google-authentication",
     "facebook-authentication",
     "angular-facebook-authentication",
-    "angular module"
+    "angular module",
+    "rxjs"
   ],
   "license": "MIT",
   "bugs": {
@@ -41,9 +42,9 @@
   "jsnext:main": "angular-6-social-login.js",
   "typings": "angular-6-social-login.d.ts",
   "peerDependencies": {
-    "@angular/common": "^5.0.0",
-    "@angular/core": "^5.0.0",
-    "rxjs": "^5.1.0",
-    "zone.js": "^0.8.4"
+    "@angular/common": "^6.0.0",
+    "@angular/core": "^6.0.0",
+    "rxjs": "^6.0.0",
+    "zone.js": "^0.8.26"
   }
 }
