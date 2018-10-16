@@ -31,8 +31,8 @@ export abstract class BaseLoginProvider implements LoginProvider {
   }
 
   parseScope(options: LoginProviderOptions) {
-    if (options && options.fields) {
-      return options.fields.join(',');
+    if (options && options.scope) {
+      return options.scope.join(',');
     }
   }
 }
