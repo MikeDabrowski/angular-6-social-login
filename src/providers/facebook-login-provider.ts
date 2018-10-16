@@ -13,7 +13,7 @@ export class FacebookLoginProvider extends BaseLoginProvider {
 
   constructor(private clientId: string, public options: LoginProviderOptions = {}) {
     super();
-    const locale = options && options.locale && this.supportedLocales.includes(options.locale);
+    const locale = this.getLocale(options);
     this.loginProviderObj.id = clientId;
     this.loginProviderObj.name = 'facebook';
     this.loginProviderObj.url = `https://connect.facebook.net/${locale ? locale : 'en_US'}/sdk.js`;
@@ -79,6 +79,12 @@ export class FacebookLoginProvider extends BaseLoginProvider {
         observer.next(response);
       });
     });
+  }
+
+  private getLocale(options: LoginProviderOptions) {
+    if (options && options.locale && this.supportedLocales.includes(options.locale)) {
+      return options.locale;
+    }
   }
 
 }

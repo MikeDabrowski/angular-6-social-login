@@ -39,7 +39,12 @@ export function getAuthServiceConfigs() {
       [
         {
           id: FacebookLoginProvider.PROVIDER_ID,
-	      provider: new FacebookLoginProvider("Your-Facebook-app-id")
+	      provider: new FacebookLoginProvider("Your-Facebook-app-id",
+              {
+                locale: 'en_US', //defaults to en_US
+                fields: ['birthday', 'gender'], //optional
+                scope: ['user_gender', 'user_birthday', 'email', 'public_profile'] //defaults to email, public_profile
+              })
         },
         {
           id: GoogleLoginProvider.PROVIDER_ID,
@@ -71,6 +76,17 @@ export function getAuthServiceConfigs() {
 
 export class AppModule { }
 
+```
+
+### Options: 
+Options passed to provider config are described by LoginProviderOptions:
+
+```javascript
+export interface LoginProviderOptions {
+  locale?: string;
+  fields?: string[];
+  scope?: string[];
+}
 ```
 
 ### Usage : 
